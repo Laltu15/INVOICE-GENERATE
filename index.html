@@ -12,33 +12,29 @@
 
     /* Invoice Styling */
     .invoice-box {
-      width: 210mm;
-      min-height: 297mm; /* A4 Portrait */
+      width: 210mm; min-height: 297mm; /* A4 Portrait */
       margin: auto;
-      padding: 15mm; /* inner safe margin */
+      padding: 15mm;
       border: 2px solid #000;
       background:#fff;
       box-sizing: border-box;
-      position: relative;
     }
     .header { text-align: center; border-bottom:2px solid #000; padding-bottom:8px; margin-bottom:12px; position:relative; }
     .header img { position:absolute; left:0; top:10px; width:80px; height:auto; }
-    .copy-label { position:absolute; top:10px; right:10px; font-weight:bold; font-size:14px; }
     h2 { margin: 5px 0; font-size:22px; letter-spacing:1px; color:#333; }
     .company-details { font-size: 14px; line-height: 1.5; color:#555; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-    table, th, td { border: 1px solid #444; padding: 6px; text-align: center; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+    table, th, td { border: 1px solid #000; padding: 6px; text-align: center; }
     th { background:#f2f2f2; }
     .no-border { border: none !important; }
     .left { text-align: left; }
     .right { text-align: right; }
     .sign-box { height: 60px; vertical-align: bottom; }
     .highlight { background:#f9fbff; }
-
     @media print {
       body { margin: 0; background:#fff; }
       .form-section, .btn-area { display: none; }
-      .invoice-box { width:210mm; min-height:297mm; border:2px solid #000; margin:0; padding:15mm; }
+      .invoice-box { border: 2px solid #000; box-shadow:none; margin: 0; padding: 15mm; }
     }
   </style>
 </head>
@@ -104,7 +100,6 @@
   <div class="header">
     <img src="/logo.png" alt="Company Logo">
     <h2>TAX INVOICE</h2>
-    <div class="copy-label">Original</div>
     <div class="company-details">
       <b>INFRA SKYNET</b><br>
       Udyam Reg. No : UDYAM-HR-03-0093322<br>
@@ -115,11 +110,13 @@
 
   <table>
     <tr class="highlight">
-      <td class="left">
+      <td class="left" colspan="3">
         <b>Invoice No:</b> <span id="outInvNo"></span> &nbsp;&nbsp;
-        <b>Date:</b> <span id="outDate"></span><br>
+        <b>Date:</b> <span id="outDate"></span> &nbsp;&nbsp;
         <b>Place of Supply:</b> <span id="outPlace"></span>
       </td>
+    </tr>
+    <tr>
       <td class="left">
         <b>Bill To:</b><br>
         <span id="outBillName"></span><br>
@@ -132,6 +129,7 @@
         <span id="outShipAddr"></span><br>
         GSTIN: <span id="outShipGST"></span>
       </td>
+      <td class="left"></td>
     </tr>
   </table>
 
@@ -195,6 +193,7 @@ function addItem() {
 }
 
 function generateInvoice() {
+  // Header
   document.getElementById('outInvNo').innerText = document.getElementById('invNo').value;
   document.getElementById('outDate').innerText = document.getElementById('invDate').value || new Date().toLocaleDateString();
   document.getElementById('outPlace').innerText = document.getElementById('place').value;
@@ -205,6 +204,7 @@ function generateInvoice() {
   document.getElementById('outShipAddr').innerText = document.getElementById('shipAddr').value;
   document.getElementById('outShipGST').innerText = document.getElementById('shipGST').value;
 
+  // Products
   const productTable = document.getElementById('productTable');
   productTable.innerHTML = `<tr>
       <th>S.N.</th><th>Description of Goods</th><th>HSN/SAC</th>
@@ -224,6 +224,7 @@ function generateInvoice() {
       <td>${qty}</td><td>${unit}</td><td>${rate.toFixed(2)}</td><td>${amt.toFixed(2)}</td></tr>`;
   });
 
+  // GST Calculation
   const gstType = document.getElementById('gstType').value;
   const cgstRate = parseFloat(document.getElementById('cgstRate').value) || 0;
   const sgstRate = parseFloat(document.getElementById('sgstRate').value) || 0;
@@ -244,10 +245,14 @@ function generateInvoice() {
     gstTable += `<tr><td class="left no-border">IGST @ ${igstRate}%:</td><td class="right">${igst.toFixed(2)}</td></tr>`;
   }
 
-  gstTable += `<tr class="highlight"><td class="left no-border"><b>Grand Total:</b></td><td class="right"><b>₹${grand.toFixed(2)}</b></td></tr>`;
+  // ✅ Round off Grand Total
+  const roundedGrand = Math.round(grand);
+
+  gstTable += `<tr class="highlight"><td class="left no-border"><b>Grand Total:</b></td><td class="right"><b>₹${roundedGrand}</b></td></tr>`;
   document.getElementById('gstTable').innerHTML = gstTable;
 
-  document.getElementById('outWords').innerText = numberToWords(Math.round(grand)) + " Only";
+  // Amount in Words
+  document.getElementById('outWords').innerText = numberToWords(roundedGrand) + " Only";
 
   document.getElementById('invoice').style.display="block";
   document.getElementById('actionBtns').style.display="block";
@@ -293,13 +298,13 @@ function printInvoice(){ window.print(); }
 function downloadPDF(){
   const element = document.getElementById('invoice');
   const opt = {
-    margin: [0,0,0,0],
+    margin: 0.2,
     filename: 'invoice.pdf',
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
   };
-  html2pdf().set(opt).from(element).save();
+  html2pdf().from(element).set(opt).save();
 }
 </script>
 </body>
