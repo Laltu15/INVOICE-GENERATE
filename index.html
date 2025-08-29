@@ -1,74 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Invoice Generator - Infra Skynet</title>
-<style>
-body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background:#f7f9fc; }
-.form-section { border: 1px solid #ccc; padding: 12px; margin: 12px; background:#fff; border-radius:6px; box-shadow:0 2px 4px rgba(0,0,0,0.05);}
-input, select, textarea { padding: 6px; margin: 3px; border: 1px solid #bbb; border-radius: 4px; }
-.btn { padding: 7px 16px; margin: 5px; background: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
-.btn:hover { background: #0056b3; }
+  <meta charset="UTF-8">
+  <title>Invoice Generator - Infra Skynet</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background:#f7f9fc; }
+    .form-section { border: 1px solid #ccc; padding: 12px; margin: 12px; background:#fff; border-radius:6px; box-shadow:0 2px 4px rgba(0,0,0,0.05);}
+    input, select, textarea { padding: 6px; margin: 3px; border: 1px solid #bbb; border-radius: 4px; }
+    .btn { padding: 7px 16px; margin: 5px; background: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+    .btn:hover { background: #0056b3; }
 
-/* Invoice Styling */
-.invoice-box {
-  width: 210mm; 
-  min-height: 297mm; /* A4 Portrait */
-  margin: auto;
-  padding: 20px;
-  border: 2px solid #000;   /* ✅ black border */
-  background:#fff;
-  box-sizing: border-box;
-  position: relative;
-}
-.header { text-align: center; border-bottom:2px solid #444; padding-bottom:8px; margin-bottom:12px; position:relative; }
-.header img { position:absolute; left:0; top:10px; width:80px; height:auto; }
-h2 { margin: 5px 0; font-size:22px; letter-spacing:1px; color:#333; }
-.company-details { font-size: 14px; line-height: 1.5; color:#555; }
-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
-table, th, td { border: 1px solid #444; padding: 6px; text-align: center; }
-th { background:#f2f2f2; }
-.no-border { border: none !important; }
-.left { text-align: left; }
-.right { text-align: right; }
-.sign-box { height: 60px; vertical-align: bottom; }
-.highlight { background:#f9fbff; }
+    /* Invoice Styling */
+    .invoice-box {
+      width: 210mm;
+      height: 297mm;  /* exact A4 Portrait */
+      margin: auto;
+      padding: 20px;
+      border: 2px solid #444;
+      background:#fff;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+    }
+    .header { text-align: center; border-bottom:2px solid #444; padding-bottom:8px; margin-bottom:12px; position:relative; }
+    .header img { position:absolute; left:0; top:10px; width:80px; height:auto; }
+    h2 { margin: 5px 0; font-size:22px; letter-spacing:1px; color:#333; }
+    .company-details { font-size: 14px; line-height: 1.5; color:#555; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+    table, th, td { border: 1px solid #444; padding: 6px; text-align: center; }
+    th { background:#f2f2f2; }
+    .no-border { border: none !important; }
+    .left { text-align: left; }
+    .right { text-align: right; }
+    .sign-box { height: 60px; vertical-align: bottom; }
+    .highlight { background:#f9fbff; }
 
-/* ✅ ORIGINAL label */
-.copy-label {
-  position:absolute;
-  top:10px;
-  right:15px;
-  font-weight:bold;
-  font-size:14px;
-  border:1px solid #000;
-  padding:2px 8px;
-}
+    /* ORIGINAL Label */
+    .copy-label {
+      position:absolute; 
+      top:10px; 
+      right:15px; 
+      font-weight:bold; 
+      font-size:14px; 
+      border:1px solid #000; 
+      padding:2px 8px;
+      background:#fff;
+    }
 
-@media print {
-  body { margin: 0; background:#fff; }
-  .form-section, .btn-area { display: none; }
-  .invoice-box {
-    width: 210mm;
-    min-height: 297mm;
-    border: 2px solid #000;
-    box-shadow:none;
-    page-break-after: avoid;
-  }
-}
-</style>
+    @media print {
+      body { margin: 0; background:#fff; }
+      .form-section, .btn-area { display: none; }
+      .invoice-box {
+        border: 2px solid #000;
+        box-shadow:none;
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 20px;
+        page-break-after: avoid;
+      }
+    }
+  </style>
 </head>
 <body>
+
 <h2 style="text-align:center;">Invoice Generator</h2>
 
 <!-- FORM -->
 <div class="form-section">
-  <!-- your form stays unchanged -->
+  <h3>Invoice Details</h3>
+  Invoice No: <input id="invNo" value="ISN/25-26/1001"> 
+  Date: <input type="date" id="invDate"> 
+  Place of Supply: <input id="place" value="Faridabad"><br><br>
+
+  <b>GST Type:</b>
+  <select id="gstType" onchange="toggleGST()">
+    <option value="intra">Intra-State (CGST + SGST)</option>
+    <option value="inter">Inter-State (IGST)</option>
+  </select><br>
+
+  <div id="intraRates">
+    CGST %: <input type="number" id="cgstRate" value="9" style="width:50px;">
+    SGST %: <input type="number" id="sgstRate" value="9" style="width:50px;">
+  </div>
+  <div id="interRates" style="display:none;">
+    IGST %: <input type="number" id="igstRate" value="18" style="width:50px;">
+  </div>
+</div>
+
+<div class="form-section">
+  <h3>Customer Details</h3>
+  <b>Bill To</b><br>
+  Name: <input id="billName" value="SHREE GANESHA CONSTRUCTIONS"><br>
+  Address: <textarea id="billAddr">Plot No 9, Mujesar, Ram swaroop Colony, Faridabad, Haryana 121001</textarea><br>
+  GSTIN: <input id="billGST" value="06CYSPS6410A1ZE"><br><br>
+
+  <b>Ship To</b><br>
+  Name: <input id="shipName" value="SHREE GANESHA CONSTRUCTIONS"><br>
+  Address: <textarea id="shipAddr">Plot No 9, Mujesar, Ram swaroop Colony, Faridabad, Haryana 121001</textarea><br>
+  GSTIN: <input id="shipGST" value="06CYSPS6410A1ZE"><br>
+</div>
+
+<div class="form-section">
+  <h3>Products</h3>
+  <div id="items">
+    <div class="item">
+      Description: <input class="desc" value="LCD SCREEN">
+      HSN: <input class="hsn" value="84733099">
+      Qty: <input type="number" class="qty" value="1">
+      Unit: <input class="unit" value="NOS">
+      Rate: <input type="number" class="rate" value="11500">
+    </div>
+  </div>
+  <button type="button" class="btn" onclick="addItem()">+ Add Item</button>
+</div>
+
+<div class="btn-area" style="text-align:center;">
+  <button class="btn" onclick="generateInvoice()">Generate Invoice</button>
 </div>
 
 <!-- INVOICE TEMPLATE -->
 <div class="invoice-box" id="invoice" style="display:none;">
-  <!-- ✅ ORIGINAL tag -->
+  <!-- ORIGINAL TAG -->
   <div class="copy-label">ORIGINAL</div>
 
   <div class="header">
@@ -82,9 +135,197 @@ th { background:#f2f2f2; }
     </div>
   </div>
 
-  <!-- your tables/content remain same -->
+  <table>
+    <tr class="highlight">
+      <td class="left">
+        <b>Invoice No:</b> <span id="outInvNo"></span><br>
+        <b>Date:</b> <span id="outDate"></span><br>
+        <b>Place of Supply:</b> <span id="outPlace"></span>
+      </td>
+      <td class="left">
+        <b>Bill To:</b><br>
+        <span id="outBillName"></span><br>
+        <span id="outBillAddr"></span><br>
+        GSTIN: <span id="outBillGST"></span>
+      </td>
+      <td class="left">
+        <b>Ship To:</b><br>
+        <span id="outShipName"></span><br>
+        <span id="outShipAddr"></span><br>
+        GSTIN: <span id="outShipGST"></span>
+      </td>
+    </tr>
+  </table>
+
+  <table id="productTable">
+    <tr>
+      <th>S.N.</th>
+      <th>Description of Goods</th>
+      <th>HSN/SAC</th>
+      <th>Qty</th>
+      <th>Unit</th>
+      <th>Rate</th>
+      <th>Amount</th>
+    </tr>
+  </table>
+
+  <table id="gstTable"></table>
+
+  <div style="margin-top:10px;">
+    <i>Amount Chargeable (in words):</i><br>
+    <span id="outWords"></span>
+  </div>
+
+  <table>
+    <tr>
+      <td class="left">
+        <b>Bank Details</b><br>
+        Bank: State Bank of India<br>
+        A/C No: 43060919412<br>
+        Branch: Chawala Colony Mathura Colony, Ballabhgarh Faridabad Haryana<br>
+        IFSC: SBIN0001157
+      </td>
+      <td class="right sign-box">
+        <b>Authorised Signatory</b>
+      </td>
+    </tr>
+  </table>
 </div>
 
-<!-- buttons + scripts remain same -->
+<div class="btn-area" id="actionBtns" style="display:none; text-align:center;">
+  <button class="btn" onclick="printInvoice()">🖨 Print</button>
+  <button class="btn" onclick="downloadPDF()">⬇ Download PDF</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+<script>
+function toggleGST() {
+  const gstType = document.getElementById("gstType").value;
+  document.getElementById("intraRates").style.display = (gstType === "intra") ? "block" : "none";
+  document.getElementById("interRates").style.display = (gstType === "inter") ? "block" : "none";
+}
+
+function addItem() {
+  const div = document.createElement('div');
+  div.className = "item";
+  div.innerHTML = `Description: <input class="desc">
+    HSN: <input class="hsn">
+    Qty: <input type="number" class="qty" value="1">
+    Unit: <input class="unit" value="NOS">
+    Rate: <input type="number" class="rate" value="0">`;
+  document.getElementById('items').appendChild(div);
+}
+
+function generateInvoice() {
+  // Header
+  document.getElementById('outInvNo').innerText = document.getElementById('invNo').value;
+  document.getElementById('outDate').innerText = document.getElementById('invDate').value || new Date().toLocaleDateString();
+  document.getElementById('outPlace').innerText = document.getElementById('place').value;
+  document.getElementById('outBillName').innerText = document.getElementById('billName').value;
+  document.getElementById('outBillAddr').innerText = document.getElementById('billAddr').value;
+  document.getElementById('outBillGST').innerText = document.getElementById('billGST').value;
+  document.getElementById('outShipName').innerText = document.getElementById('shipName').value;
+  document.getElementById('outShipAddr').innerText = document.getElementById('shipAddr').value;
+  document.getElementById('outShipGST').innerText = document.getElementById('shipGST').value;
+
+  // Products
+  const productTable = document.getElementById('productTable');
+  productTable.innerHTML = `<tr>
+      <th>S.N.</th><th>Description of Goods</th><th>HSN/SAC</th>
+      <th>Qty</th><th>Unit</th><th>Rate</th><th>Amount</th></tr>`;
+  let total = 0;
+  const items = document.querySelectorAll('#items .item');
+  items.forEach((row, i) => {
+    const desc = row.querySelector('.desc').value;
+    const hsn = row.querySelector('.hsn').value;
+    const qty = parseFloat(row.querySelector('.qty').value) || 0;
+    const unit = row.querySelector('.unit').value;
+    const rate = parseFloat(row.querySelector('.rate').value) || 0;
+    const amt = qty * rate;
+    total += amt;
+    productTable.innerHTML += `<tr>
+      <td>${i+1}</td><td>${desc}</td><td>${hsn}</td>
+      <td>${qty}</td><td>${unit}</td><td>${rate.toFixed(2)}</td><td>${amt.toFixed(2)}</td></tr>`;
+  });
+
+  // GST Calculation
+  const gstType = document.getElementById('gstType').value;
+  const cgstRate = parseFloat(document.getElementById('cgstRate').value) || 0;
+  const sgstRate = parseFloat(document.getElementById('sgstRate').value) || 0;
+  const igstRate = parseFloat(document.getElementById('igstRate').value) || 0;
+
+  let grand = total;
+  let gstTable = "";
+
+  if (gstType === "intra") {
+    const cgst = total * (cgstRate/100);
+    const sgst = total * (sgstRate/100);
+    grand += cgst + sgst;
+    gstTable += `<tr><td class="left no-border">CGST @ ${cgstRate}%:</td><td class="right">${cgst.toFixed(2)}</td></tr>`;
+    gstTable += `<tr><td class="left no-border">SGST @ ${sgstRate}%:</td><td class="right">${sgst.toFixed(2)}</td></tr>`;
+  } else {
+    const igst = total * (igstRate/100);
+    grand += igst;
+    gstTable += `<tr><td class="left no-border">IGST @ ${igstRate}%:</td><td class="right">${igst.toFixed(2)}</td></tr>`;
+  }
+
+  gstTable += `<tr class="highlight"><td class="left no-border"><b>Grand Total:</b></td><td class="right"><b>₹${Math.round(grand)}</b></td></tr>`;
+  document.getElementById('gstTable').innerHTML = gstTable;
+
+  document.getElementById('outWords').innerText = numberToWords(Math.round(grand)) + " Only";
+
+  document.getElementById('invoice').style.display="block";
+  document.getElementById('actionBtns').style.display="block";
+}
+
+// ✅ Number to Words (Indian System)
+function numberToWords(num) {
+  if (num === 0) return "Zero";
+
+  const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+             'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+             'Seventeen', 'Eighteen', 'Nineteen'];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  function inWords(n) {
+    if (n < 20) return a[n];
+    if (n < 100) return b[Math.floor(n / 10)] + (n % 10 ? " " + a[n % 10] : "");
+    if (n < 1000) return a[Math.floor(n / 100)] + " Hundred " + (n % 100 ? inWords(n % 100) : "");
+    return "";
+  }
+
+  function indianNumberSystem(n) {
+    let str = "";
+    const crore = Math.floor(n / 10000000); n %= 10000000;
+    const lakh = Math.floor(n / 100000); n %= 100000;
+    const thousand = Math.floor(n / 1000); n %= 1000;
+    const hundred = Math.floor(n / 100);
+    const rest = n % 100;
+
+    if (crore) str += inWords(crore) + " Crore ";
+    if (lakh) str += inWords(lakh) + " Lakh ";
+    if (thousand) str += inWords(thousand) + " Thousand ";
+    if (hundred) str += a[hundred] + " Hundred ";
+    if (rest) str += inWords(rest);
+
+    return str.trim();
+  }
+
+  return indianNumberSystem(num);
+}
+
+function printInvoice(){ window.print(); }
+function downloadPDF(){
+  const element = document.getElementById('invoice');
+  const opt = {
+    margin: 0,
+    filename: 'invoice.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().from(element).set(opt).save();
+}
+</script>
 </body>
 </html>
