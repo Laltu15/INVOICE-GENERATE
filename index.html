@@ -12,13 +12,14 @@
 
     /* Invoice Styling */
     .invoice-box {
-      width: 210mm; min-height: 297mm; /* A4 Portrait */
+      width: 210mm; 
+      min-height: 297mm;  /* A4 Portrait */
       margin: auto;
-      padding: 20px;
-      border: 2px solid #444;
+      padding: 15mm;
+      border: 2px solid #000;
       background:#fff;
-      box-shadow: 0 0 8px rgba(0,0,0,0.15);
       box-sizing: border-box;
+      position: relative;
     }
     .header { text-align: center; border-bottom:2px solid #444; padding-bottom:8px; margin-bottom:12px; position:relative; }
     .header img { position:absolute; left:0; top:10px; width:80px; height:auto; }
@@ -32,10 +33,28 @@
     .right { text-align: right; }
     .sign-box { height: 60px; vertical-align: bottom; }
     .highlight { background:#f9fbff; }
+
+    /* ORIGINAL Tag */
+    .copy-label {
+      position:absolute; 
+      top:10px; 
+      right:15px; 
+      font-weight:bold; 
+      font-size:14px; 
+      border:1px solid #000; 
+      padding:2px 8px;
+    }
+
     @media print {
       body { margin: 0; background:#fff; }
       .form-section, .btn-area { display: none; }
-      .invoice-box { border: 2px solid #000; box-shadow:none; }
+      .invoice-box {
+        border: 2px solid #000;
+        box-shadow: none;
+        width: 210mm;
+        min-height: 297mm;
+        page-break-after: always;
+      }
     }
   </style>
 </head>
@@ -98,6 +117,9 @@
 
 <!-- INVOICE TEMPLATE -->
 <div class="invoice-box" id="invoice" style="display:none;">
+  <!-- ORIGINAL LABEL -->
+  <div class="copy-label">ORIGINAL</div>
+
   <div class="header">
     <img src="/logo.png" alt="Company Logo">
     <h2>TAX INVOICE</h2>
@@ -112,7 +134,7 @@
   <table>
     <tr class="highlight">
       <td class="left">
-        <b>Invoice No:</b> <span id="outInvNo"></span><br>
+        <b>Invoice No:</b> <span id="outInvNo"></span> &nbsp;&nbsp; 
         <b>Date:</b> <span id="outDate"></span><br>
         <b>Place of Supply:</b> <span id="outPlace"></span>
       </td>
@@ -243,16 +265,17 @@ function generateInvoice() {
     gstTable += `<tr><td class="left no-border">IGST @ ${igstRate}%:</td><td class="right">${igst.toFixed(2)}</td></tr>`;
   }
 
-  gstTable += `<tr class="highlight"><td class="left no-border"><b>Grand Total:</b></td><td class="right"><b>₹${grand.toFixed(2)}</b></td></tr>`;
+  grand = Math.round(grand); // ✅ Always round figure
+  gstTable += `<tr class="highlight"><td class="left no-border"><b>Grand Total:</b></td><td class="right"><b>₹${grand}</b></td></tr>`;
   document.getElementById('gstTable').innerHTML = gstTable;
 
-  document.getElementById('outWords').innerText = numberToWords(Math.round(grand)) + " Only";
+  document.getElementById('outWords').innerText = numberToWords(grand) + " Only";
 
   document.getElementById('invoice').style.display="block";
   document.getElementById('actionBtns').style.display="block";
 }
 
-// ✅ Fixed Number to Words (Indian System)
+// ✅ Number to Words (Indian System)
 function numberToWords(num) {
   if (num === 0) return "Zero";
 
@@ -292,11 +315,11 @@ function printInvoice(){ window.print(); }
 function downloadPDF(){
   const element = document.getElementById('invoice');
   const opt = {
-    margin: 0.5,
+    margin: 0,
     filename: 'invoice.pdf',
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().from(element).set(opt).save();
 }
