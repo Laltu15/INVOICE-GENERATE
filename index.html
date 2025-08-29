@@ -19,11 +19,9 @@
       background:#fff;
       box-shadow: 0 0 8px rgba(0,0,0,0.15);
       box-sizing: border-box;
-      position: relative;
     }
     .header { text-align: center; border-bottom:2px solid #444; padding-bottom:8px; margin-bottom:12px; position:relative; }
     .header img { position:absolute; left:0; top:10px; width:80px; height:auto; }
-    .copy-type { position:absolute; right:0; top:10px; font-size:12px; font-weight:bold; }
     h2 { margin: 5px 0; font-size:22px; letter-spacing:1px; color:#333; }
     .company-details { font-size: 14px; line-height: 1.5; color:#555; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
@@ -48,7 +46,7 @@
 <!-- FORM -->
 <div class="form-section">
   <h3>Invoice Details</h3>
-  Invoice No: <input id="invNo" value="ISN/25-26/"> 
+  Invoice No: <input id="invNo" value="ISN/25-26/1001"> 
   Date: <input type="date" id="invDate"> 
   Place of Supply: <input id="place" value="Faridabad"><br><br>
 
@@ -70,25 +68,25 @@
 <div class="form-section">
   <h3>Customer Details</h3>
   <b>Bill To</b><br>
-  Name: <input id="billName" value=""><br>
-  Address: <textarea id="billAddr"></textarea><br>
-  GSTIN: <input id="billGST" value=""><br><br>
+  Name: <input id="billName" value="SHREE GANESHA CONSTRUCTIONS"><br>
+  Address: <textarea id="billAddr">Plot No 9, Mujesar, Ram swaroop Colony, Faridabad, Haryana 121001</textarea><br>
+  GSTIN: <input id="billGST" value="06CYSPS6410A1ZE"><br><br>
 
   <b>Ship To</b><br>
-  Name: <input id="shipName" value=""><br>
-  Address: <textarea id="shipAddr"></textarea><br>
-  GSTIN: <input id="shipGST" value=""><br>
+  Name: <input id="shipName" value="SHREE GANESHA CONSTRUCTIONS"><br>
+  Address: <textarea id="shipAddr">Plot No 9, Mujesar, Ram swaroop Colony, Faridabad, Haryana 121001</textarea><br>
+  GSTIN: <input id="shipGST" value="06CYSPS6410A1ZE"><br>
 </div>
 
 <div class="form-section">
   <h3>Products</h3>
   <div id="items">
     <div class="item">
-      Description: <input class="desc" value="">
+      Description: <input class="desc" value="LCD SCREEN">
       HSN: <input class="hsn" value="84733099">
-      Qty: <input type="number" class="qty" value="">
+      Qty: <input type="number" class="qty" value="1">
       Unit: <input class="unit" value="NOS">
-      Rate: <input type="number" class="rate" value="">
+      Rate: <input type="number" class="rate" value="11500">
     </div>
   </div>
   <button type="button" class="btn" onclick="addItem()">+ Add Item</button>
@@ -101,8 +99,7 @@
 <!-- INVOICE TEMPLATE -->
 <div class="invoice-box" id="invoice" style="display:none;">
   <div class="header">
-    <img src="logo.png" alt="Company Logo">
-    <span class="copy-type">ORIGINAL FOR RECIPIENT</span>
+    <img src="/logo.png" alt="Company Logo">
     <h2>TAX INVOICE</h2>
     <div class="company-details">
       <b>INFRA SKYNET</b><br>
@@ -112,16 +109,13 @@
     </div>
   </div>
 
-  <!-- Invoice details row in one line -->
   <table>
     <tr class="highlight">
-      <td class="left" colspan="3">
-        <b>Invoice No:</b> <span id="outInvNo"></span> &nbsp;&nbsp;&nbsp;
-        <b>Date:</b> <span id="outDate"></span> &nbsp;&nbsp;&nbsp;
+      <td class="left">
+        <b>Invoice No:</b> <span id="outInvNo"></span><br>
+        <b>Date:</b> <span id="outDate"></span><br>
         <b>Place of Supply:</b> <span id="outPlace"></span>
       </td>
-    </tr>
-    <tr>
       <td class="left">
         <b>Bill To:</b><br>
         <span id="outBillName"></span><br>
@@ -134,7 +128,6 @@
         <span id="outShipAddr"></span><br>
         GSTIN: <span id="outShipGST"></span>
       </td>
-      <td></td>
     </tr>
   </table>
 
@@ -198,8 +191,9 @@ function addItem() {
 }
 
 function generateInvoice() {
+  // Header
   document.getElementById('outInvNo').innerText = document.getElementById('invNo').value;
-  document.getElementById('outDate').innerText = document.getElementById('invDate').value;
+  document.getElementById('outDate').innerText = document.getElementById('invDate').value || new Date().toLocaleDateString();
   document.getElementById('outPlace').innerText = document.getElementById('place').value;
   document.getElementById('outBillName').innerText = document.getElementById('billName').value;
   document.getElementById('outBillAddr').innerText = document.getElementById('billAddr').value;
@@ -208,6 +202,7 @@ function generateInvoice() {
   document.getElementById('outShipAddr').innerText = document.getElementById('shipAddr').value;
   document.getElementById('outShipGST').innerText = document.getElementById('shipGST').value;
 
+  // Products
   const productTable = document.getElementById('productTable');
   productTable.innerHTML = `<tr>
       <th>S.N.</th><th>Description of Goods</th><th>HSN/SAC</th>
@@ -227,6 +222,7 @@ function generateInvoice() {
       <td>${qty}</td><td>${unit}</td><td>${rate.toFixed(2)}</td><td>${amt.toFixed(2)}</td></tr>`;
   });
 
+  // GST Calculation
   const gstType = document.getElementById('gstType').value;
   const cgstRate = parseFloat(document.getElementById('cgstRate').value) || 0;
   const sgstRate = parseFloat(document.getElementById('sgstRate').value) || 0;
@@ -250,31 +246,60 @@ function generateInvoice() {
   gstTable += `<tr class="highlight"><td class="left no-border"><b>Grand Total:</b></td><td class="right"><b>₹${grand.toFixed(2)}</b></td></tr>`;
   document.getElementById('gstTable').innerHTML = gstTable;
 
-  document.getElementById('outWords').innerText = capitalizeFirst(numberToWords(Math.round(grand))) + " only";
+  document.getElementById('outWords').innerText = numberToWords(Math.round(grand)) + " Only";
 
   document.getElementById('invoice').style.display="block";
   document.getElementById('actionBtns').style.display="block";
 }
 
+// ✅ Fixed Number to Words (Indian System)
 function numberToWords(num) {
-  const a = ['','one','two','three','four','five','six','seven','eight','nine','ten',
-             'eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
-  const b = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+  if (num === 0) return "Zero";
+
+  const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+             'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+             'Seventeen', 'Eighteen', 'Nineteen'];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
   function inWords(n) {
-    if (n<20) return a[n];
-    if (n<100) return b[Math.floor(n/10)] + " " + a[n%10];
-    if (n<1000) return a[Math.floor(n/100)] + " hundred " + inWords(n%100);
-    if (n<100000) return inWords(Math.floor(n/1000)) + " thousand " + inWords(n%1000);
-    return n;
+    if (n < 20) return a[n];
+    if (n < 100) return b[Math.floor(n / 10)] + (n % 10 ? " " + a[n % 10] : "");
+    if (n < 1000) return a[Math.floor(n / 100)] + " Hundred " + (n % 100 ? inWords(n % 100) : "");
+    return "";
   }
-  return inWords(num).trim();
+
+  function indianNumberSystem(n) {
+    let str = "";
+    const crore = Math.floor(n / 10000000); n %= 10000000;
+    const lakh = Math.floor(n / 100000); n %= 100000;
+    const thousand = Math.floor(n / 1000); n %= 1000;
+    const hundred = Math.floor(n / 100);
+    const rest = n % 100;
+
+    if (crore) str += inWords(crore) + " Crore ";
+    if (lakh) str += inWords(lakh) + " Lakh ";
+    if (thousand) str += inWords(thousand) + " Thousand ";
+    if (hundred) str += a[hundred] + " Hundred ";
+    if (rest) str += inWords(rest);
+
+    return str.trim();
+  }
+
+  return indianNumberSystem(num);
 }
-function capitalizeFirst(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
 
 function printInvoice(){ window.print(); }
-function downloadPDF(){ html2pdf().from(document.getElementById('invoice')).save('invoice.pdf'); }
+function downloadPDF(){
+  const element = document.getElementById('invoice');
+  const opt = {
+    margin: 0.5,
+    filename: 'invoice.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().from(element).set(opt).save();
+}
 </script>
 </body>
 </html>
-
-
