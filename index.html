@@ -63,6 +63,25 @@
   </style>
 </head>
 <body>
+<!-- Add this inside <body> before everything -->
+<script>
+  if (sessionStorage.getItem("loggedIn") !== "true") {
+    window.location.href = "login.html"; // redirect if not logged in
+  }
+</script>
+
+<div style="position:absolute; top:15px; right:20px;">
+  <button onclick="logout()" style="padding:8px 14px; background:#dc3545; border:none; color:#fff; border-radius:5px; cursor:pointer;">
+    🚪 Logout
+  </button>
+</div>
+
+<script>
+function logout() {
+  sessionStorage.removeItem("loggedIn");
+  window.location.href = "login.html";
+}
+</script>
 
 <h2 style="text-align:center;">Invoice Generator</h2>
 
@@ -329,4 +348,5 @@ function downloadPDF(){
 </script>
 </body>
 </html>
+
 
