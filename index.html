@@ -149,11 +149,6 @@ function ut() {
       Rate: <input type="number" class="rate" value="">
     </div>
 
-    <div class="form-section">
-  <h3>Upload Signature</h3>
-  <input type="file" id="sigUpload" accept="image/*">
-   </div>
-
   </div>
   <button type="button" class="btn" onclick="addItem()">+ Add Item</button>
 </div>
@@ -161,6 +156,11 @@ function ut() {
 <div class="btn-area" style="text-align:center;">
   <button class="btn" onclick="generateInvoice()">Generate Invoice</button>
 </div>
+
+<div class="form-section">
+  <h3>Upload Signature</h3>
+  <input type="file" id="sigUpload" accept="image/*">
+   </div>
 
 <!-- INVOICE TEMPLATE -->
 <div class="invoice-box" id="invoice" style="display:none;">
@@ -230,7 +230,7 @@ function ut() {
         IFSC: SBIN0001157
       </td>
       <td class="right sign-box">
-  <b>Authorised Signatory (Digital)</b><br>
+  <b>Authorised Signatory</b><br>
   <img id="sigImage" src="" alt="Signature" style="max-width:150px; max-height:60px; display:none;">
    </td>
 
