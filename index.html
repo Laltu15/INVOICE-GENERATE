@@ -37,7 +37,7 @@
     .sign-box { height: 60px; vertical-align: bottom; }
     .highlight { background:#f9fbff; }
 
-    /* ORIGINAL Label */
+    /* ORIGINAL/DUPLICATE/TRIPLICATE Label */
     .copy-label {
       position:absolute; 
       top:10px; 
@@ -65,10 +65,10 @@
   </style>
 </head>
 <body>
-<!-- Add this inside <body> before everything -->
+
 <script>
   if (sessionStorage.getItem("loggedIn") !== "true") {
-    window.location.href = "login.html"; // redirect if not logged in
+    window.location.href = "login.html";
   }
 </script>
 
@@ -91,12 +91,12 @@ function ut() {
 <div class="form-section">
   <iframe src="https://docs.google.com/spreadsheets/d/1niBY8qiTx_uTHudPvjPCnOI8jXpY4veX/edit?usp=sharing&ouid=113391954839419332435&rtpof=true&sd=true" 
         style="width:100%; height:600px; border:1px solid #ccc;">
-</iframe>
-<a href="https://drive.google.com/drive/folders/1dSXs1nsdIbKU8Z6Pid5Qmn8T2v6fSsm6?usp=drive_link" 
-   target="_blank" 
-   style="display:inline-block; padding:12px 20px; background:#007bff; color:#fff; border-radius:6px; text-decoration:none;">
-   📂 Open Invoice Folder (Google Drive)
-</a>
+  </iframe>
+  <a href="https://drive.google.com/drive/folders/1dSXs1nsdIbKU8Z6Pid5Qmn8T2v6fSsm6?usp=drive_link" 
+     target="_blank" 
+     style="display:inline-block; padding:12px 20px; background:#007bff; color:#fff; border-radius:6px; text-decoration:none;">
+     📂 Open Invoice Folder (Google Drive)
+  </a>
 
   <h3>Invoice Details</h3>
   Invoice No: <input id="invNo" value="ISN/25-26/"> 
@@ -115,7 +115,14 @@ function ut() {
   </div>
   <div id="interRates" style="display:none;">
     IGST %: <input type="number" id="igstRate" value="18" style="width:50px;">
-  </div>
+  </div><br>
+
+  <b>Invoice Copy Type:</b>
+  <select id="copyType">
+    <option value="ORIGINAL">Original</option>
+    <option value="DUPLICATE">Duplicate</option>
+    <option value="TRIPLICATE">Triplicate</option>
+  </select>
 </div>
 
 <div class="form-section">
@@ -141,6 +148,12 @@ function ut() {
       Unit: <input class="unit" value="NOS">
       Rate: <input type="number" class="rate" value="">
     </div>
+
+    <div class="form-section">
+  <h3>Upload Signature</h3>
+  <input type="file" id="sigUpload" accept="image/*">
+   </div>
+
   </div>
   <button type="button" class="btn" onclick="addItem()">+ Add Item</button>
 </div>
@@ -151,8 +164,8 @@ function ut() {
 
 <!-- INVOICE TEMPLATE -->
 <div class="invoice-box" id="invoice" style="display:none;">
-  <!-- ORIGINAL TAG -->
-  <div class="copy-label">ORIGINAL</div>
+  <!-- Copy Type Label -->
+  <div class="copy-label" id="copyLabel">ORIGINAL</div>
 
   <div class="header">
     <img src="/logo.png" alt="Company Logo">
@@ -217,24 +230,32 @@ function ut() {
         IFSC: SBIN0001157
       </td>
       <td class="right sign-box">
-        <b>Authorised Signatory</b>
-      </td>
+  <b>Authorised Signatory (Digital)</b><br>
+  <img id="sigImage" src="" alt="Signature" style="max-width:150px; max-height:60px; display:none;">
+   </td>
+
     </tr>
   </table>
+
   <table>
     <tr>
       <td class="term">
         <b>Term & Condition</b><br>
-  <ol>
-  <li>Goods once sold will not taken back.</li>
-  <li>Warranty is provided as per the Original Equipment Manufacturer (OEM) terms and conditions. We do not provide warranty.</li> 
-  <li>No warranty claims will be accepted for goods damaged in transit or in cases of burns.</li>
-  <li>A charge of ₹500 will be levied for any cheque return, regardless of the reason.</li>
-  <li>An interest rate of 24% per annum will be applied if payment is not made within the stipulated time.</li>
-</ol>
+        <ol>
+          <li>Goods once sold will not taken back.</li>
+          <li>Warranty is provided as per OEM terms. No warranty from us.</li> 
+          <li>No warranty claims for goods damaged in transit.</li>
+          <li>₹500 charge for any cheque return.</li>
+          <li>24% p.a interest if payment is delayed.</li>
+        </ol>
       </td>
     </tr>
   </table>
+
+  <!-- Footer Note -->
+  <div style="text-align:center; margin-top:20px; font-size:12px; color:#555;">
+    This is a computer generated invoice.
+  </div>
 </div>
 
 <div class="btn-area" id="actionBtns" style="display:none; text-align:center;">
@@ -272,6 +293,10 @@ function generateInvoice() {
   document.getElementById('outShipName').innerText = document.getElementById('shipName').value;
   document.getElementById('outShipAddr').innerText = document.getElementById('shipAddr').value;
   document.getElementById('outShipGST').innerText = document.getElementById('shipGST').value;
+
+  // Set invoice copy type
+  const copyType = document.getElementById('copyType').value;
+  document.getElementById('copyLabel').innerText = copyType;
 
   // Products
   const productTable = document.getElementById('productTable');
@@ -323,7 +348,7 @@ function generateInvoice() {
   document.getElementById('actionBtns').style.display="block";
 }
 
-// ✅ Number to Words (Indian System)
+// Number to Words (Indian System)
 function numberToWords(num) {
   if (num === 0) return "Zero";
 
@@ -344,57 +369,40 @@ function numberToWords(num) {
     const crore = Math.floor(n / 10000000); n %= 10000000;
     const lakh = Math.floor(n / 100000); n %= 100000;
     const thousand = Math.floor(n / 1000); n %= 1000;
-    const hundred = Math.floor(n / 100);
-    const rest = n % 100;
+    const hundred = n;
 
-    if (crore) str += inWords(crore) + " Crore ";
-    if (lakh) str += inWords(lakh) + " Lakh ";
-    if (thousand) str += inWords(thousand) + " Thousand ";
-    if (hundred) str += a[hundred] + " Hundred ";
-    if (rest) str += inWords(rest);
-
+    if(crore) str += inWords(crore) + " Crore ";
+    if(lakh) str += inWords(lakh) + " Lakh ";
+    if(thousand) str += inWords(thousand) + " Thousand ";
+    if(hundred) str += inWords(hundred);
     return str.trim();
   }
 
   return indianNumberSystem(num);
 }
 
-function printInvoice(){ window.print(); }
-function downloadPDF(){
-  const element = document.getElementById('invoice');
-  const opt = {
-    margin: 0,
-    filename: 'invoice.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().from(element).set(opt).save();
+function printInvoice() {
+  window.print();
 }
+
+function downloadPDF() {
+  const element = document.getElementById('invoice');
+  html2pdf().from(element).set({ margin: 0.5, filename: 'Invoice.pdf', html2canvas: { scale: 2 } }).save();
+}
+
+document.getElementById('sigUpload').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = document.getElementById('sigImage');
+    img.src = event.target.result;
+    img.style.display = "block";
+  }
+  reader.readAsDataURL(file);
+});
+
 </script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
