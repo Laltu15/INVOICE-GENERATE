@@ -123,6 +123,11 @@ function ut() {
     <option value="DUPLICATE">Duplicate</option>
     <option value="TRIPLICATE">Triplicate</option>
   </select>
+
+  <!-- ✅ Manual Round Off Option -->
+  <br><br>
+  <b>Manual Round Off (Optional):</b>
+  <input type="number" id="manualRoundOff" step="0.01" value="" placeholder="Example: -0.25 or 0.50">
 </div>
 
 <div class="form-section">
@@ -148,7 +153,6 @@ function ut() {
       Unit: <input class="unit" value="NOS">
       Rate: <input type="number" class="rate" value="">
     </div>
-
   </div>
   <button type="button" class="btn" onclick="addItem()">+ Add Item</button>
 </div>
@@ -160,7 +164,7 @@ function ut() {
 <div class="form-section">
   <h3>Upload Signature</h3>
   <input type="file" id="sigUpload" accept="image/*">
-   </div>
+</div>
 
 <!-- INVOICE TEMPLATE -->
 <div class="invoice-box" id="invoice" style="display:none;">
@@ -230,10 +234,9 @@ function ut() {
         IFSC: SBIN0001157
       </td>
       <td class="right sign-box">
-  <b>Authorised Signatory</b><br>
-  <img id="sigImage" src="" alt="Signature" style="max-width:150px; max-height:60px; display:none;">
-   </td>
-
+        <b>Authorised Signatory</b><br>
+        <img id="sigImage" src="" alt="Signature" style="max-width:150px; max-height:60px; display:none;">
+      </td>
     </tr>
   </table>
 
@@ -318,7 +321,7 @@ function generateInvoice() {
       <td>${qty}</td><td>${unit}</td><td>${rate.toFixed(2)}</td><td>${amt.toFixed(2)}</td></tr>`;
   });
 
-  // GST Calculation
+  // ✅ GST Calculation + Total Tax + Round Off (Manual / Auto)
   const gstType = document.getElementById('gstType').value;
   const cgstRate = parseFloat(document.getElementById('cgstRate').value) || 0;
   const sgstRate = parseFloat(document.getElementById('sgstRate').value) || 0;
@@ -326,23 +329,52 @@ function generateInvoice() {
 
   let grand = total;
   let gstTable = "";
+  let totalTax = 0;
 
   if (gstType === "intra") {
     const cgst = total * (cgstRate/100);
     const sgst = total * (sgstRate/100);
-    grand += cgst + sgst;
+
+    totalTax = cgst + sgst;
+    grand += totalTax;
+
     gstTable += `<tr><td class="left no-border">CGST @ ${cgstRate}%:</td><td class="right">${cgst.toFixed(2)}</td></tr>`;
     gstTable += `<tr><td class="left no-border">SGST @ ${sgstRate}%:</td><td class="right">${sgst.toFixed(2)}</td></tr>`;
   } else {
     const igst = total * (igstRate/100);
-    grand += igst;
+
+    totalTax = igst;
+    grand += totalTax;
+
     gstTable += `<tr><td class="left no-border">IGST @ ${igstRate}%:</td><td class="right">${igst.toFixed(2)}</td></tr>`;
   }
 
-  gstTable += `<tr class="highlight"><td class="left no-border"><b>Grand Total:</b></td><td class="right"><b>₹${Math.round(grand)}</b></td></tr>`;
+  // ✅ Total Tax Amount Output Line
+  gstTable += `<tr><td class="left no-border"><b>Total Tax Amount:</b></td><td class="right"><b>${totalTax.toFixed(2)}</b></td></tr>`;
+
+  // ✅ Manual Round Off (If entered)
+  const manualRoundOffVal = document.getElementById('manualRoundOff').value;
+  const manualRoundOff = manualRoundOffVal !== "" ? parseFloat(manualRoundOffVal) : null;
+
+  // ✅ Auto Round Off (If manual not entered)
+  let roundedGrand = Math.round(grand);
+  let roundOff = roundedGrand - grand;
+
+  if (manualRoundOff !== null && !isNaN(manualRoundOff)) {
+    roundOff = manualRoundOff;
+    roundedGrand = Math.round(grand + roundOff);
+  }
+
+  // ✅ Show Round Off only when required
+  if (Math.abs(roundOff) >= 0.01) {
+    gstTable += `<tr><td class="left no-border">Round Off:</td><td class="right">${roundOff.toFixed(2)}</td></tr>`;
+  }
+
+  gstTable += `<tr class="highlight"><td class="left no-border"><b>Grand Total:</b></td><td class="right"><b>₹${roundedGrand}</b></td></tr>`;
+
   document.getElementById('gstTable').innerHTML = gstTable;
 
-  document.getElementById('outWords').innerText = numberToWords(Math.round(grand)) + " Only";
+  document.getElementById('outWords').innerText = numberToWords(roundedGrand) + " Only";
 
   document.getElementById('invoice').style.display="block";
   document.getElementById('actionBtns').style.display="block";
@@ -401,9 +433,7 @@ document.getElementById('sigUpload').addEventListener('change', function(e) {
   }
   reader.readAsDataURL(file);
 });
-
 </script>
 
 </body>
 </html>
-
