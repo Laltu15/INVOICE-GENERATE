@@ -62,6 +62,33 @@
         page-break-after: avoid;
       }
     }
+
+    /* ✅ Force Single Page Print */
+    @page {
+      size: A4;
+      margin: 8mm;
+    }
+
+    @media print {
+      html, body {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+      }
+
+      .invoice-box {
+        width: 100%;
+        height: auto;
+        min-height: 100%;
+        page-break-inside: avoid;
+        overflow: hidden;
+      }
+
+      table, tr, td, th {
+        page-break-inside: avoid;
+      }
+    }
   </style>
 </head>
 <body>
@@ -102,6 +129,11 @@ function ut() {
   Invoice No: <input id="invNo" value="ISN/25-26/"> 
   Date: <input type="date" id="invDate"> 
   Place of Supply: <input id="place" value="Faridabad"><br><br>
+
+  <!-- ✅ Added PO No / PO Date / Ref No -->
+  PO No: <input id="poNo" value="">
+  PO Date: <input type="date" id="poDate">
+  Ref No: <input id="refNo" value=""><br><br>
 
   <b>GST Type:</b>
   <select id="gstType" onchange="toggleGST()">
@@ -188,7 +220,11 @@ function ut() {
       <td class="left">
         <b>Invoice No:</b> <span id="outInvNo"></span><br>
         <b>Date:</b> <span id="outDate"></span><br>
-        <b>Place of Supply:</b> <span id="outPlace"></span>
+        <b>Place of Supply:</b> <span id="outPlace"></span><br>
+        <!-- ✅ Added Output PO No / PO Date / Ref No -->
+        <b>PO No:</b> <span id="outPoNo"></span><br>
+        <b>PO Date:</b> <span id="outPoDate"></span><br>
+        <b>Ref No:</b> <span id="outRefNo"></span>
       </td>
       <td class="left">
         <b>Bill To:</b><br>
@@ -290,6 +326,12 @@ function generateInvoice() {
   document.getElementById('outInvNo').innerText = document.getElementById('invNo').value;
   document.getElementById('outDate').innerText = document.getElementById('invDate').value || new Date().toLocaleDateString();
   document.getElementById('outPlace').innerText = document.getElementById('place').value;
+
+  // ✅ PO / Ref
+  document.getElementById('outPoNo').innerText = document.getElementById('poNo').value;
+  document.getElementById('outPoDate').innerText = document.getElementById('poDate').value;
+  document.getElementById('outRefNo').innerText = document.getElementById('refNo').value;
+
   document.getElementById('outBillName').innerText = document.getElementById('billName').value;
   document.getElementById('outBillAddr').innerText = document.getElementById('billAddr').value;
   document.getElementById('outBillGST').innerText = document.getElementById('billGST').value;
